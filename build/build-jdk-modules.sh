@@ -67,7 +67,7 @@ find "$OUTPUT_DIR/bin" -type f -exec rm {} \; 2>/dev/null || true
 
 # Create empty placeholder .so files for libraries the JVM expects to find
 # These are loaded via our static symbol dispatch table in os_emscripten.cpp
-for lib in libjava libzip libnet libnio libjimage libawt libawt_headless libjawt libfontmanager; do
+for lib in libjava libzip libnet libnio libjimage libverify libawt libawt_headless libjawt libfontmanager; do
   touch "$OUTPUT_DIR/lib/${lib}.so"
 done
 

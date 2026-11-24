@@ -1,0 +1,42 @@
+name: Build JavaBox
+
+on:
+  workflow_dispatch:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    env:
+      EMSDK_VERSION: 5.0.2
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential autoconf automake libtool pkg-config zip unzip
+
+      - name: Build JavaBox
+        run: |
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          git clone --depth 1 --branch "$EMSDK_VERSION" https://github.com/emscripten-core/emsdk.git "$RUNNER_TEMP/emsdk"
+          "$RUNNER_TEMP/emsdk/emsdk" install "$EMSDK_VERSION"
+          "$RUNNER_TEMP/emsdk/emsdk" activate "$EMSDK_VERSION"
+          . "$RUNNER_TEMP/emsdk/emsdk_env.sh"
+          build/build-direct.sh "$PWD/build/www" --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: javabox-wasm
+          path: |
+            build/www/javabox-direct.*
+            build/www/index.html
+          if-no-files-found: error

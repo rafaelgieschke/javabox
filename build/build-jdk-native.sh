@@ -47,7 +47,7 @@ if ! command -v emcc &>/dev/null; then
   exit 1
 fi
 
-ARCHIVES=(libjava.a libnio.a libzip.a libjimage.a)
+ARCHIVES=(libjava.a libnio.a libzip.a libjimage.a libverify.a)
 
 echo "=== Building JDK native libraries for WASM ==="
 echo "Source: $OPENJDK_DIR"

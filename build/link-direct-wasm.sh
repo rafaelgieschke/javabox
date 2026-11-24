@@ -42,13 +42,14 @@ LIBJAVA="build/jdk-native-wasm/libjava.a"
 LIBJIMAGE="build/jdk-native-wasm/libjimage.a"
 LIBZIP="build/jdk-native-wasm/libzip.a"
 LIBNIO="build/jdk-native-wasm/libnio.a"
+LIBVERIFY="build/jdk-native-wasm/libverify.a"
 LIBFFI="third-party/libffi-emscripten/install/lib/libffi.a"
 JVM_MAIN_C="build/jvm-main.c"
 JVM_MAIN_O="build/jvm-main.o"
 
 # ── Verify prerequisites ──────────────────────────────────────────────────────
 echo "Checking prerequisites..."
-for f in "$LIBJVM" "$LIBJAVA" "$LIBJIMAGE" "$LIBZIP" "$LIBNIO" "$LIBFFI" "$JVM_MAIN_C"; do
+for f in "$LIBJVM" "$LIBJAVA" "$LIBJIMAGE" "$LIBZIP" "$LIBNIO" "$LIBVERIFY" "$LIBFFI" "$JVM_MAIN_C"; do
   if [ ! -f "$f" ]; then
     echo "ERROR: Missing $f" >&2
     exit 1
@@ -114,7 +115,7 @@ echo "Generating static JNI symbol table..."
 # stand in for libawt, and java.desktop classes resolve those through the same
 # lookup path. Leaving it out makes java.awt.Toolkit.<clinit> die with
 # UnsatisfiedLinkError the moment anything touches AWT (e.g. Doom).
-SYMBOLS="$("$LLVM_NM" --defined-only "$LIBJAVA" "$LIBJIMAGE" "$LIBZIP" "$LIBNIO" "$JVM_MAIN_O" \
+SYMBOLS="$("$LLVM_NM" --defined-only "$LIBJAVA" "$LIBJIMAGE" "$LIBZIP" "$LIBNIO" "$LIBVERIFY" "$JVM_MAIN_O" \
   | awk '$2 == "T" { print $3 }' \
   | grep -E '^(Java_|JNI_OnLoad|JNI_OnUnload|JIMAGE_|ZIP_|JDK_|JNU_|Agent_On|GetStringPlatformChars|VerifyClassForMajorVersion)' \
   | sort -u)"
@@ -152,7 +153,7 @@ em++ -O3 -mtail-call -pthread \
   -sERROR_ON_UNDEFINED_SYMBOLS=0 \
   "$JVM_MAIN_O" "$SYMTAB_O" \
   -Wl,--whole-archive \
-  "$LIBJVM" "$LIBJAVA" "$LIBJIMAGE" "$LIBZIP" "$LIBNIO" \
+  "$LIBJVM" "$LIBJAVA" "$LIBJIMAGE" "$LIBZIP" "$LIBNIO" "$LIBVERIFY" \
   -Wl,--no-whole-archive \
   "$LIBFFI" \
   "${PRELOAD_FLAGS[@]}" \
